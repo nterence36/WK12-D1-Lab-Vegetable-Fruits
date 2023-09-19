@@ -13,7 +13,18 @@ const vegetables = [
         name:'mushroom,',
         color: 'white',
         readyToEat: true
+    },
+    {
+        name:'green beans',
+        color:'yellow',
+        readyToEat:'false'
+    },
+    {
+        name:'spinach',
+        color:'green',
+        readyToEat:'true'
     }
+
 ];    
 
 module.exports = vegetables;
