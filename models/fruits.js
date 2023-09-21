@@ -1,19 +1,50 @@
-const fruits = [
-    {
-        name:'apple',
-        color: 'red',
-        readyToEat: true
-    },
-    {
-        name:'pear',
-        color: 'green',
-        readyToEat: false
-    },
-    {
-        name:'banana',
-        color: 'yellow',
-        readyToEat: true
-    }
-];    
+// STEP 1. IMPORT MONGOOSE
+const mongoose = require("mongoose");
 
-module.exports = fruits;
+// STEP 2. CREATE YOU DATA SCHEMA
+const fruitSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  color: {
+    type: String,
+    required: true,
+  },
+  readyToEat: {
+    type: Boolean,
+  }
+});
+
+// STEP 3. CREATE YOUR MODEL USING YOUR SCHEMA
+const Fruit = mongoose.model("Fruit", fruitSchema);
+
+// STEP 4. EXPORT YOUR NEWLY CREATED MODEL
+module.exports = Fruit;
+
+
+
+
+
+
+
+
+// const fruits = [
+//     {
+//         name:'apple',
+//         color: 'red',
+//         readyToEat: true
+//     },
+//     {
+//         name:'pear',
+//         color: 'green',
+//         readyToEat: false
+//     },
+//     {
+//         name:'banana',
+//         color: 'yellow',
+//         readyToEat: true
+//     }
+// ];    
+
+// module.exports = fruits;
