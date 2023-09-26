@@ -546,3 +546,511 @@ Review Questions
 Section 2
 Copyright © Per Scholas 2023
 
+
+
+
+Welcome to Per Scholas
+☰
+/Week 13 - Day 2
+Static Files
+Lesson Objectives
+Create a static files folder for CSS/JS
+Create a static files folder for CSS/JS
+CSS/JS code doesn't change with server-side data
+We can toss any static files into a 'public' directory
+
+static means unchanging
+dynamic means changing depending on data
+Let's set up a directory for our static code:
+
+Create a directory called public
+Inside the publicdirectory create a directory called css
+Inside the cssdirectory, create an app.cssfile
+Put some CSS in the app.cssfile
+Inside server.js place the following near the top:
+CSS
+@import url('https://fonts.googleapis.com/css?family=Comfortaa|Righteous');
+
+body {
+  background: url(https://images.clipartlogo.com/files/istock/previews/8741/87414357-apple-seamless-pastel-colors-pattern-fruits-texture-background.jpg);
+  margin: 0;
+  font-family: 'Comfortaa', cursive;
+}
+
+h1 {
+  font-family: 'Righteous', cursive;
+  background: antiquewhite;
+  margin:0;
+  margin-bottom: .5em;
+  padding: 1em;
+  text-align: center;
+}
+
+a {
+  color: orange;
+  text-decoration: none;
+  text-shadow: 1px 1px 1px black;
+  font-size: 1.5em;
+  background: rgba(193, 235, 187, .9);
+}
+
+a:hover {
+  color: ghostwhite;
+}
+
+li {
+  list-style: none;
+}
+
+li a {
+  color: mediumseagreen;
+}
+
+input[type=text] {
+  padding: .3em;
+}
+
+input[type=submit] {
+  padding: .3em;
+  color: orange;
+  background: mediumseagreen;
+  font-size: 1em;
+  border-radius: 10%;
+}
+```javascript
+app.use(express.static('public')); //tells express to try to match requests with files in the directory called 'public'
+```
+In your views/layout/Default.jsx, you can now call that css file
+
+<link rel="stylesheet" href="/css/app.css">    
+Section 2
+Deployment
+Roadmap
+Make a new github repository.
+set up environmental variables.
+Remove node_modules.
+Get started with deployment services.
+Create app.
+Attach MongoDB Atlas.
+Update code.
+Push git to deployment.
+New Github Repository But verify you have a valid .gitignore file
+
+Choose
+
+a repository name
+public (let your instructors help you if you get stuck, you can always change this later)
+don't initialize with a README
+don't Add .gitignore
+dont add license - optional
+Press the Create Repositorybutton when you're ready!
+
+In Terminal type git remote add originand then paste the URL that you copied from github
+
+Set the Node Engine
+You should always specify a Node.js version that matches the runtime you're developing and testing with. Without setting this, your deployment service will 'guess' a version Node.js for you. One big gotcha is that some newer/updated npm packages just won't run on an older version of Node.js and vice versa.
+
+So let's set the correct version:
+
+In Terminal
+
+node --version
+The line returned is the version, currently, I have v14.17.0, but you should set it to whatever your version is.
+
+In package.json, you can add enginesanywhere, just make sure you don't break the JSON format. In this example we are putting it between the auto-generated version and description fields. Don't forget double quotes and a ,
+
+  "version": "1.0.0",
+  "engines": {
+    "node": "14.17.0"
+  },
+  "description": "",
+Test your app
+If your express app doesn't run locally it definitely won't run in deployment!
+test it out and fix any bugs
+git add/git commit
+git add .
+git commit -m 'Some Message'
+git branch -M main<- only do this the first time you push to github
+git push -u origin main<--- only add -uthe first time you push to github
+Check this step carefully! Make sure node_modulesare NOT on github!! If they made it to github, that means they are not being ignored by .gitignore. If you don't properly ignore them now you'll have massive headaches with deployment later!
+
+If You Need to Remove node_modules
+In order for deployment to work, you can't have node_modulesin your repo. Instead, your deployment service will add this dir itself!
+
+go to local repo dir
+rm -rf node_modules
+use git to: add, then commit, push
+touch .gitignore
+code .gitignore
+add a line that says just node_modulesto .gitignore
+save .gitignore
+git: add, commit, push
+to get it working locally again: npm install
+Verify you Attached MongoDB Atlas
+Just use your connection string as your DATABSE_URL.
+
+Make sure you added .env and a .gitignore to exclude your .env file from your git repository.
+
+In your server.js
+// in your code
+const PORT = process.env.PORT || 8000
+
+// at the bottom
+app.listen(PORT, () => {
+  console.log('We in the building', PORT)
+})
+Push Git
+First update your remote repo so you're code is up to date.
+
+git add -A
+git commit -m "updating code for deployment"
+git push origin main
+Now also push to deployment
+Wait 1 minute, then you should be able to have your deployed app open up in your browser.
+
+If thing's don't work out, relax and try to find out the error.
+Troubleshooting
+Having weird errors?
+Deployment Can't Figure Out Your Language
+the hidden folder .gitand package.jsonMUST be on the same level in your directory (the root)
+Check that your have ignored node modules
+Your node modules should NOT appear on github
+
+no node modules
+
+If you have not ignored your node modules, follow the steps listed above to remove and ignore them
+
+Check that your config variables match
+In your deployment service, under your app and its settings, Reveal Config Vars
+
+In your own app, make sure you have your databse url equal to process.envand then .DATABSE_URL
+
+and in your .env fileDATABASE_URL=thecorrectmongostring
+
+It won't work if you make it a different variable name (lowercase, no underscore) - do not change it in your deployment! If you change it there you'll have to hunt how to update more things. Just set it in your own app.
+
+Note: your the variable for the port is not listed, but it must be PORTall caps. It is accessed by process.env.PORT
+
+Copyright © Per Scholas 2023
+
+
+// URL	HTTP Verb	Action	Used For	Mongoose Model Function
+// /things/	GET	index	Displaying a list of all things	.find
+// /things/new	GET	new	Display HTML form for creating a new thing	N/A
+// /things	POST	create	Create a new thing	.create
+// /things/:id	GET	show	Display a specific thing	.findById
+// /things/:id/edit	GET	edit	Return an HTML form for editing a thing	.findById
+// /things/:id	PATCH/PUT	update	Update a specific thing	.findByIdAndUpdate
+// /things/:id	DELETE	destroy	Delete a specific thing	.findByIdAndDelete
+
+
+
+
+
+
+
+
+// const express = require("express");
+// const mongoose = require("mongoose");
+// const app = express();
+// const jsxEngine = require("jsx-view-engine");
+// // IMPORT DOTENV MODULE TO CONNECT TO YOUR ENV FILE
+// const dotenv = require("dotenv");
+
+// // const fruits = require("./models/fruits.js"); //NOTE: it must start with ./ if it's just a file, not an NPM package
+
+// const Fruit = require("./models/fruits");
+
+// const vegetables = require("./models/vegetables.js");
+// app.set("view engine", "jsx");
+// app.engine("jsx", jsxEngine());
+
+// dotenv.config();
+
+// const methodOverride = require('method-override');
+
+
+// mongoose.connect(process.env.MONGO_URI, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
+
+// mongoose.connection.once("open", () => {
+//   console.log("Connected to mongo");
+// })
+
+// //near the top, around other app.use() calls
+// app.use(express.urlencoded({ extended: false }));
+
+// //use methodOverride.  We'll be adding a query parameter to our delete form named _method
+// app.use(methodOverride('_method'));
+
+
+// app.use((req, res, next) => {
+//   console.log("I run for all routes");
+//   next();
+// });
+
+// // index, new, delete. Update, create, edit. And show.
+
+// app.get("/fruits/", async (req, res) => {
+//   // res.send(fruits);
+//   // res.render("fruits/Index", { fruits: fruits });
+//   try {
+//     const fruits = await Fruit.find();
+//     res.render("fruits/Index", {fruits: fruits});
+//   } catch(error) {
+//     console.error(error);
+//   }
+// });
+
+// app.get("/vegetables/", (req, res) => {
+//   res.render("vegetables/Index", { vegetables: vegetables });
+// });
+
+// // new
+// app.get("/fruits/new", (req, res) => {
+//   res.render("fruits/New");
+// });
+
+// app.get("/vegetables/new", (req, res) => {
+//   res.render("vegetables/New");
+// });
+
+// // delete
+// app.delete('/fruits/:id', (req, res)=>{
+//   res.send('deleting...');
+// });
+// // update
+
+// // create
+// app.post("/fruits",  async (req, res) => {
+//   try {
+//     if (req.body.readyToEat === "on") {
+//       //if checked, req.body.readyToEat is set to 'on'
+//       req.body.readyToEat = true; //do some data correction
+//     } else {
+//       //if not checked, req.body.readyToEat is undefined
+//       req.body.readyToEat = false; //do some data correction
+//     }
+//     // fruits.push(req.body);
+//      await Fruit.create(req.body);
+
+//     res.redirect("/fruits");
+
+//   } catch(error) {
+//     console.log(error);
+//   }
+// });
+
+// app.post("/vegetables", (req, res) => {
+//   if (req.body.readyToEat === "on") {
+//     req.body.readyToEat = true;
+//   } else {
+//     req.body.readyToEat = false;
+//   }
+//   vegetables.push(req.body);
+//   res.redirect('/vegetables');
+// });
+
+// //add show route
+// app.get("/fruits/:id", async (req, res) => {
+
+//   try {
+//     const fruit = await Fruit.findById(req.params.id);
+
+//     res.render("fruits/Show", {fruit: fruit})
+//   } catch(error) {
+//     console.log(error)
+//   }
+// });
+
+// app.get("/vegetables/:indexOfVegetablesArray", (req, res) => {
+//   res.render("vegetables/Show", {
+//     vegetable: vegetables[req.params.indexOfVegetablesArray],
+//   });
+// });
+
+// app.listen(process.env.PORT || 3000, () => {
+//   console.log("listening");
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// app.post('/vegetables', (req, res) => {
+//     if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
+//         req.body.readyToEat = true //do some data correction
+//     } else { //if not checked, req.body.readyToEat is undefined
+//         req.body.readyToEat = false //do some data correction
+//     }
+//     vegetables.push(req.body)
+//     // console.log(vegetables)
+//     res.redirect('/vegetables') // send user back to main page
+// })
+
+
+// const express = require("express");
+// const mongoose = require('mongoose');
+// const app = express();
+// const jsxEngine = require("jsx-view-engine");
+// // Inport dotenv module to connect to your env file
+// const dotenv = require("dotenv")
+
+// //const fruits = require("./models/fruits.js"); //NOTE: it must start with ./ if it's just a file, not an NPM package
+
+// const Fruit = require('./models/fruits.js');
+// const vegetables = require("./models/vegetables.js");
+
+
+// // connecting to env file
+// dotenv.config()
+
+// //connecting mangoose to get rid of errors
+// mongoose.connect(process.env.MONGO_URI, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+  
+// });
+// //... and then farther down the file
+// mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+// mongoose.connection.once('open', ()=> {
+//     console.log('connected to mongo');
+// });
+
+// //adding view templates
+
+// app.set("view engine", "jsx");
+// app.engine("jsx", jsxEngine()); 
+
+
+
+// //near the top, around other app.use() calls
+// app.use(express.urlencoded({extended:false}));
+
+// app.use((req, res, next) => {
+//   console.log('I run for all routes');
+//   next();
+// });
+
+
+// // INDUCES - Index, New, Delet, Create, Edit, Show
+// // // Index route - All the Fruits
+// // app.get("/fruits/", (req, res) => {
+// //   // res.send(fruits);
+// //  // res.render("fruits/Index", { fruits: fruits });
+// //     Fruit.find({}, (error, allFruits)=>{
+// //       res.render('fruits/Index', {
+// //           fruits: allFruits
+// //       });
+// //     });
+// // });
+
+// app.get("/fruits/", async (req, res) => {
+//   // res.send(fruits);
+//   // res.render("fruits/Index", { fruits: fruits });
+//   try {
+//     const fruits = await Fruit.find();
+//     res.render("fruits/Index", {fruits: fruits});
+//   } catch(error) {
+//     console.error(error);
+//   }
+
+// });
+
+// // New - get the form to add new fruit
+// app.get('/fruits/new', (req, res) => {
+//   res.render('fruits/New');
+// })
+
+
+// // Delete
+// //Edit
+// // Create
+// // app.post('/fruits', (req, res)=>{
+// //   if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
+// //       req.body.readyToEat = true; //do some data correction
+// //   } else { //if not checked, req.body.readyToEat is undefined
+// //       req.body.readyToEat = false; //do some data correction
+// //   }
+// //   fruits.push(req.body);
+// //   console.log(fruits);
+// //   //res.send('data received');
+// //   res.redirect('/fruits');  // Send the user back to /fruits
+// // });
+
+// app.post("/fruits", async (req, res) => {
+//   try {
+//     if (req.body.readyToEat === "on") {
+//       //if checked, req.body.readyToEat is set to 'on'
+//       req.body.readyToEat = true; //do some data correction
+//     } else {
+//       //if not checked, req.body.readyToEat is undefined
+//       req.body.readyToEat = false; //do some data correction
+//     }
+//     // fruits.push(req.body);
+//     await Fruit.create(req.body);
+
+//     res.redirect("/fruits");
+    
+//   } catch(error) {
+//     console.log(error);
+//   }
+// });
+
+
+// // Vegetables
+// app.get("/vegetables/", (req, res) =>{
+//     res.render("vegetables/Index", {vegetables: vegetables});
+// });
+
+// // New - get the form to add new vegetable
+// app.get('/vegetables/new', (req, res) => {
+//   res.render('vegetables/New');
+// })
+
+// // Create
+// app.post('/vegetables', (req, res)=>{
+//   if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
+//       req.body.readyToEat = true; //do some data correction
+//   } else { //if not checked, req.body.readyToEat is undefined
+//       req.body.readyToEat = false; //do some data correction
+//   }
+//   vegetables.push(req.body);
+//   console.log(vegetables);
+//   //res.send('data received');
+//   res.redirect('/vegetables');  // Send the user back to /fruits
+// });
+
+
+// app.get("/fruits/:indexOfFruitsArray", (req, res) => {
+//   // res.send(fruits[req.params.indexOfFruitsArray]);
+//   res.render("fruits/Show", {
+//     //second param must be an object
+//     fruit: fruits[req.params.indexOfFruitsArray], //there will be a variable available inside the ejs file called fruit, its value is fruits[req.params.indexOfFruitsArray]
+//   }); // renders the info using the appropriate template
+// });
+
+// app.get("/vegetables/:indexOfVegetablesArray", (req, res) => {
+    
+//     res.render("vegetables/Show", {
+     
+//       vegetable: vegetables[req.params.indexOfVegetablesArray]
+//     }); 
+//   });
+  
+
+// app.listen(process.env.PORT || 3001, () => {
+//     console.log('listening');
+// });

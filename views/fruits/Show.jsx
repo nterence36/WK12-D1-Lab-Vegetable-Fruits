@@ -1,4 +1,5 @@
 const React = require("react");
+const DefaultLayout = require('../layouts/default');
 
 class Show extends React.Component {
   render() {
@@ -7,13 +8,16 @@ class Show extends React.Component {
     console.log(fruit);
 
     return (
-      <div>
+      <DefaultLayout title={"Fruits Show Page"}>
         <h1> Show Page </h1>
-        The {fruit.name} is {fruit.color}.{" "}
+        The {fruit.name }.{" "} is {fruit.color}.{" "}
+        
         {fruit.readyToEat
           ? "It is ready to eat"
           : "It is not ready to eat... Cant touch this"}
-      </div>
+      <br/>
+      <a href='/fruits'>Home</a>
+      </DefaultLayout>
     );
   }
 }

@@ -1,294 +1,243 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const app = express();
-const jsxEngine = require("jsx-view-engine");
-// IMPORT DOTENV MODULE TO CONNECT TO YOUR ENV FILE
-const dotenv = require("dotenv");
+// Add dotenv
+require('dotenv').config()
+// Load express...
+const express = require('express')
+const app = express()
+const jsxEngine = require('jsx-view-engine')
 
-// const fruits = require("./models/fruits.js"); //NOTE: it must start with ./ if it's just a file, not an NPM package
+const methodOverride = require('method-override')
 
-const Fruit = require("./models/fruits");
-
-const vegetables = require("./models/vegetables.js");
-app.set("view engine", "jsx");
-app.engine("jsx", jsxEngine());
-
-dotenv.config();
-
+const mongoose = require('mongoose')
+// connect to Mongoose
 mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
 
-mongoose.connection.once("open", () => {
-  console.log("Connected to mongo");
-})
+// data
+// const fruits = require('./models/fruits')
+// const vegetables = require('./models/vegetables')
+const Fruit = require('./models/fruits.js')
+ // const Vegetables = require('./models/vegetables')
+const Vegetable = require('./models/vegetables.js')
+
+// adding our view templates
+
+
+app.set('view engine', 'jsx')
+app.engine('jsx', jsxEngine())
 
 //near the top, around other app.use() calls
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended:false}))
+
+app.use(methodOverride('_method'))
 
 app.use((req, res, next) => {
-  console.log("I run for all routes");
-  next();
-});
-
-// index, new, delete. Update, create, edit. And show.
-
-app.get("/fruits/", async (req, res) => {
-  // res.send(fruits);
-  // res.render("fruits/Index", { fruits: fruits });
+    console.log('I run for all routes')
+    next()
+})
+// seed route
+app.get('/fruits/seed', async (req, res)=>{
   try {
-    const fruits = await Fruit.find();
-    res.render("fruits/Index", {fruits: fruits});
+      await Fruit.create([
+      {
+          name:'grapefruit',
+          color:'pink',
+          readyToEat:true
+      },
+      {
+          name:'grape',
+          color:'purple',
+          readyToEat:false
+      },
+      {
+          name:'avocado',
+          color:'green',
+          readyToEat:true
+      }
+  ])
+      res.redirect('/fruits')
+  } catch (error) {
+      console.error(error)
+    }
+});
+// routes INDUCES
+// Index route - All the fruits
+app.get("/fruits/", async (req, res) => {
+    // res.send(fruits);
+    // res.render("fruits/Index", { fruits: fruits });
+    try {
+      const fruits = await Fruit.find({});
+      res.render("fruits/Index", {fruits: fruits});
+    } catch(error) {
+      console.error(error);
+    }
+  });
+
+app.get("/vegetables/", async (req, res) => {
+  try {
+     const vegetables = await Vegetable.find({});
+    res.render("vegetables/Index", {vegetables: vegetables});
   } catch(error) {
     console.error(error);
   }
 });
 
-app.get("/vegetables/", (req, res) => {
-  res.render("vegetables/Index", { vegetables: vegetables });
-});
 
-// new
-app.get("/fruits/new", (req, res) => {
-  res.render("fruits/New");
-});
+// New - get the form to add a new fruit
+app.get('/fruits/new', (req, res) => {
+    res.render('fruits/New')
+})
 
-app.get("/vegetables/new", (req, res) => {
-  res.render("vegetables/New");
-});
+app.get('/vegetables/new', (req, res) => {
+    res.render('vegetables/New')
+})
 
-// delete
-
-// update
-
-// create
-app.post("/fruits",  async (req, res) => {
+// Delete
+//Fruits
+app.delete('/fruits/:id', async (req, res)=>{
+    try {
+        await Fruit.findByIdAndRemove(req.params.id)
+        res.redirect('/fruits')//redirect back to fruits index
+    } catch(error) {
+        console.error(error);
+      }
+    })
+   
+//Vegetables delete route
+app.delete('/vegetables/:id', async (req, res)=>{
+  try {
+      await Vegetable.findByIdAndRemove(req.params.id)
+      res.redirect('/vegetables')//redirect back to vegetables index
+  } catch(error) {
+      console.error(error);
+    }
+  })
+ 
+// Update
+app.put("/fruits/:id",  async (req, res) => {
   try {
     if (req.body.readyToEat === "on") {
       //if checked, req.body.readyToEat is set to 'on'
-      req.body.readyToEat = true; //do some data correction
+      req.body.readyToEat = true //do some data correction
     } else {
       //if not checked, req.body.readyToEat is undefined
-      req.body.readyToEat = false; //do some data correction
+      req.body.readyToEat = false //do some data correction
     }
     // fruits.push(req.body);
-     await Fruit.create(req.body);
+     await Fruit.findByIdAndUpdate(req.params.id, req.body)
 
-    res.redirect("/fruits");
+    res.redirect("/fruits")
 
-  } catch(error) {
-    console.log(error);
-  }
-});
-
-app.post("/vegetables", (req, res) => {
-  if (req.body.readyToEat === "on") {
-    req.body.readyToEat = true;
-  } else {
-    req.body.readyToEat = false;
-  }
-  vegetables.push(req.body);
-  res.redirect('/vegetables');
-});
-
-//add show route
-app.get("/fruits/:id", async (req, res) => {
-
-  try {
-    const fruit = await Fruit.findById(req.params.id);
-
-    res.render("fruits/Show", {fruit: fruit})
   } catch(error) {
     console.log(error)
   }
-});
+})
 
-app.get("/vegetables/:indexOfVegetablesArray", (req, res) => {
-  res.render("vegetables/Show", {
-    vegetable: vegetables[req.params.indexOfVegetablesArray],
-  });
-});
+// Update vegetable routes
+app.put("/vegetables/:id",  async (req, res) => {
+  try {
+    if (req.body.readyToEat === "on") {
+      //if checked, req.body.readyToEat is set to 'on'
+      req.body.readyToEat = true //do some data correction
+    } else {
+      //if not checked, req.body.readyToEat is undefined
+      req.body.readyToEat = false //do some data correction
+    }
+    // fruits.push(req.body);
+     await Vegetable.findByIdAndUpdate(req.params.id, req.body)
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("listening");
-});
+    res.redirect("/vegetables")
 
-
-
-
-
-
-
-
-
-
-
-
+  } catch(error) {
+    console.log(error)
+  }
+})
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// const express = require("express");
-// const mongoose = require('mongoose');
-// const app = express();
-// const jsxEngine = require("jsx-view-engine");
-// // Inport dotenv module to connect to your env file
-// const dotenv = require("dotenv")
-
-// //const fruits = require("./models/fruits.js"); //NOTE: it must start with ./ if it's just a file, not an NPM package
-
-// const Fruit = require('./models/fruits.js');
-// const vegetables = require("./models/vegetables.js");
-
-
-// // connecting to env file
-// dotenv.config()
-
-// //connecting mangoose to get rid of errors
-// mongoose.connect(process.env.MONGO_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
+//Create - Add a new fruit to your fruits
+app.post("/fruits",  async (req, res) => {
+    try {
+      if (req.body.readyToEat === "on") {
+        //if checked, req.body.readyToEat is set to 'on'
+        req.body.readyToEat = true //do some data correction
+      } else {
+        //if not checked, req.body.readyToEat is undefined
+        req.body.readyToEat = false //do some data correction
+      }
+      // fruits.push(req.body);
+       await Fruit.create(req.body)
   
-// });
-// //... and then farther down the file
-// mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-// mongoose.connection.once('open', ()=> {
-//     console.log('connected to mongo');
-// });
+      res.redirect("/fruits")
+  
+    } catch(error) {
+      console.log(error)
+    }
+  })
 
-// //adding view templates
+  // Create - Add a new vegetable to your vegetables list
+  app.post("/vegetables",  async (req, res) => {
+    try {
+      if (req.body.readyToEat === "on") {
+        //if checked, req.body.readyToEat is set to 'on'
+        req.body.readyToEat = true //do some data correction
+      } else {
+        //if not checked, req.body.readyToEat is undefined
+        req.body.readyToEat = false //do some data correction
+      }
+      
+       await Vegetable.create(req.body)
+  
+      res.redirect("/vegetables")
+  
+    } catch(error) {
+      console.log(error)
+    }
+  })
 
-// app.set("view engine", "jsx");
-// app.engine("jsx", jsxEngine()); 
+//Edit route
+app.get('/fruits/:id/edit', async (req, res)=>{
+  try {
+      const foundFruit = await Fruit.findById(req.params.id)
+      res.render('fruits/Edit', 
+      {fruit: foundFruit})
+  } catch(error) {
+      console.log(error)
+    }
+})
 
+app.get('/vegetables/:id/edit', async (req, res)=>{
+  try {
+      const foundVegetable = await Vegetable.findById(req.params.id)
+      res.render('vegetables/Edit', 
+      {vegetable: foundVegetable})
+  } catch(error) {
+      console.log(error)
+    }
+})
 
+// Show route - one particular fruit by ID
+app.get("/fruits/:id", async (req, res) => {
 
-// //near the top, around other app.use() calls
-// app.use(express.urlencoded({extended:false}));
-
-// app.use((req, res, next) => {
-//   console.log('I run for all routes');
-//   next();
-// });
-
-
-// // INDUCES - Index, New, Delet, Create, Edit, Show
-// // // Index route - All the Fruits
-// // app.get("/fruits/", (req, res) => {
-// //   // res.send(fruits);
-// //  // res.render("fruits/Index", { fruits: fruits });
-// //     Fruit.find({}, (error, allFruits)=>{
-// //       res.render('fruits/Index', {
-// //           fruits: allFruits
-// //       });
-// //     });
-// // });
-
-// app.get("/fruits/", async (req, res) => {
-//   // res.send(fruits);
-//   // res.render("fruits/Index", { fruits: fruits });
-//   try {
-//     const fruits = await Fruit.find();
-//     res.render("fruits/Index", {fruits: fruits});
-//   } catch(error) {
-//     console.error(error);
-//   }
-
-// });
-
-// // New - get the form to add new fruit
-// app.get('/fruits/new', (req, res) => {
-//   res.render('fruits/New');
-// })
-
-
-// // Delete
-// //Edit
-// // Create
-// // app.post('/fruits', (req, res)=>{
-// //   if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
-// //       req.body.readyToEat = true; //do some data correction
-// //   } else { //if not checked, req.body.readyToEat is undefined
-// //       req.body.readyToEat = false; //do some data correction
-// //   }
-// //   fruits.push(req.body);
-// //   console.log(fruits);
-// //   //res.send('data received');
-// //   res.redirect('/fruits');  // Send the user back to /fruits
-// // });
-
-// app.post("/fruits", async (req, res) => {
-//   try {
-//     if (req.body.readyToEat === "on") {
-//       //if checked, req.body.readyToEat is set to 'on'
-//       req.body.readyToEat = true; //do some data correction
-//     } else {
-//       //if not checked, req.body.readyToEat is undefined
-//       req.body.readyToEat = false; //do some data correction
-//     }
-//     // fruits.push(req.body);
-//     await Fruit.create(req.body);
-
-//     res.redirect("/fruits");
-    
-//   } catch(error) {
-//     console.log(error);
-//   }
-// });
-
-
-// // Vegetables
-// app.get("/vegetables/", (req, res) =>{
-//     res.render("vegetables/Index", {vegetables: vegetables});
-// });
-
-// // New - get the form to add new vegetable
-// app.get('/vegetables/new', (req, res) => {
-//   res.render('vegetables/New');
-// })
-
-// // Create
-// app.post('/vegetables', (req, res)=>{
-//   if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
-//       req.body.readyToEat = true; //do some data correction
-//   } else { //if not checked, req.body.readyToEat is undefined
-//       req.body.readyToEat = false; //do some data correction
-//   }
-//   vegetables.push(req.body);
-//   console.log(vegetables);
-//   //res.send('data received');
-//   res.redirect('/vegetables');  // Send the user back to /fruits
-// });
-
-
-// app.get("/fruits/:indexOfFruitsArray", (req, res) => {
-//   // res.send(fruits[req.params.indexOfFruitsArray]);
-//   res.render("fruits/Show", {
-//     //second param must be an object
-//     fruit: fruits[req.params.indexOfFruitsArray], //there will be a variable available inside the ejs file called fruit, its value is fruits[req.params.indexOfFruitsArray]
-//   }); // renders the info using the appropriate template
-// });
-
-// app.get("/vegetables/:indexOfVegetablesArray", (req, res) => {
-    
-//     res.render("vegetables/Show", {
-     
-//       vegetable: vegetables[req.params.indexOfVegetablesArray]
-//     }); 
-//   });
+    try {
+      const fruit = await Fruit.findById(req.params.id)
+  
+      res.render("fruits/Show", {fruit: fruit})
+    } catch(error) {
+      console.log(error)
+    }
+  })
   
 
-// app.listen(process.env.PORT || 3001, () => {
-//     console.log('listening');
-// });
+app.get('/vegetables/:indexOfVegArray', async (req, res) => {
+  try {
+    const vegetable = await Vegetable.findById(req.params.id)
+
+    res.render("vegetables/Show", {vegetable: vegetable})
+  } catch(error) {
+    console.log(error)
+  }
+})
+app.listen(3000, () => {
+    console.log('listening')
+})
